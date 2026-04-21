@@ -1,3 +1,5 @@
+#![allow(unused_parens)]
+
 const STATE_VECTOR_LEN: usize = 624;
 const STATE_VECTOR_M: usize = 397;
 
@@ -14,7 +16,7 @@ struct TwisterRNG {
 
 impl TwisterRNG {
 
-    fn from_seed(seed: u32) -> TwisterRNG {
+    pub fn from_seed(seed: u32) -> TwisterRNG {
 
         let mut rand: TwisterRNG = TwisterRNG {
             index: 0,
@@ -27,14 +29,13 @@ impl TwisterRNG {
         return rand;
     }
 
-    #[allow(dead_code)]
-    fn next_int(&mut self) -> u32 {
+    pub fn next_int(&mut self) -> u32 {
 
-        let mut y: u32 = 0; 
+        let mut y: u32; 
 
-        static mag: [u32; 2] = [0x0, 0x9908b0df];
+        static MAG: [u32; 2] = [0x0, 0x9908b0df];
 
-        if (self.index as u32) >= (STATE_VECTOR_LEN as u32) {
+        if self.index >= STATE_VECTOR_LEN {
 
             if self.index >= STATE_VECTOR_LEN+1 {
                 __seed_rand(self, 4357);
@@ -46,7 +47,7 @@ impl TwisterRNG {
 
                 y = (self.mt[kk] & UPPER_MASK) | (self.mt[kk+1] & LOWER_MASK);
 
-                self.mt[kk] = self.mt[kk+STATE_VECTOR_M] ^ (y >> 1) ^ mag[(y & 0x1) as usize];
+                self.mt[kk] = self.mt[kk+STATE_VECTOR_M] ^ (y >> 1) ^ MAG[(y & 0x1) as usize];
 
                 kk += 1;
             }
@@ -55,20 +56,21 @@ impl TwisterRNG {
 
                 y = (self.mt[kk] & UPPER_MASK) | (self.mt[kk+1] & LOWER_MASK);
                 
-                self.mt[kk] = self.mt[kk+(STATE_VECTOR_M.wrapping_sub(STATE_VECTOR_LEN))] ^ (y >> 1) ^ mag[(y & 0x1) as usize];
+                self.mt[kk] = self.mt[kk+(STATE_VECTOR_M.wrapping_sub(STATE_VECTOR_LEN))] ^ (y >> 1) ^ MAG[(y & 0x1) as usize];
             }
 
             y = (self.mt[STATE_VECTOR_LEN-1] & UPPER_MASK) | (self.mt[0] & LOWER_MASK);
 
-            self.mt[STATE_VECTOR_LEN-1] = self.mt[STATE_VECTOR_M-1] ^ (y >> 1) ^ mag[(y & 0x1) as usize];
+            self.mt[STATE_VECTOR_LEN-1] = self.mt[STATE_VECTOR_M-1] ^ (y >> 1) ^ MAG[(y & 0x1) as usize];
 
             self.index = 0;
 
         }
         
-        // Tempering
         y = self.mt[self.index];
         self.index += 1;
+
+        // Tempering
         y ^= (y >> 11);
         y ^= (y << 7) & TEMPERING_MASK_B;
         y ^= (y << 15) & TEMPERING_MASK_C;
@@ -79,19 +81,21 @@ impl TwisterRNG {
 }
 
 fn __seed_rand(rand: &mut TwisterRNG, seed: u32) {
+
     rand.mt[0] = seed & 0xffffffff;
 
-    for i in 1..STATE_VECTOR_LEN {
+    rand.index = 0x1;
 
-        rand.index = i;
+    while rand.index < STATE_VECTOR_LEN {
         
-        let prev = rand.mt[i-1];
+        let prev = rand.mt[(rand.index-1) as usize];
 
-        println!("mt[{i}] -> {prev}");
-
-        rand.mt[i] = (prev.wrapping_mul(6069)) & 0xffffffff;
-
+        rand.mt[rand.index] = (prev.wrapping_mul(6069)) & 0xffffffff;
+        
+        rand.index += 1;
     }
+
+    println!("Rand.index -> {0}", rand.index);
 
 }
 
@@ -101,8 +105,12 @@ pub fn twist(seed: u32) {
 
     let ts = twist.seed;
 
-    println!("Twister seed -> {ts}");
-    let int: u32 = twist.next_int();
-    println!("First int -> {int}")
+    println!("\nTwister seed -> {ts}");
 
+    for i in 0..10 {
+
+        let int: u32 = twist.next_int();
+
+        println!("{i} -> {int}");
+    }
 }
