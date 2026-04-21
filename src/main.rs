@@ -1,6 +1,7 @@
 mod rand;
 mod core;
 use rand::twister;
+use rand::entropy;
 use core::seed;
 
 fn main() {
@@ -14,4 +15,9 @@ fn main() {
     bipseed.add_word(0xFF);
 
     println!("{:?}", bipseed);
+
+    let src = entropy::rand_source();
+
+    println!("Entropy -> {}", src);
+
 }
