@@ -1,5 +1,8 @@
+#![allow(unused)]
 
-pub static BIP39_STRINGS: [&str; 2048] = [
+static BIP39_ERR: &str  = "ERROR";
+
+static BIP39_STRINGS: [&str; 2048] = [
 "abandon",
 "ability",
 "able",
@@ -2049,3 +2052,15 @@ pub static BIP39_STRINGS: [&str; 2048] = [
 "zone",
 "zoo",
 ];
+
+pub fn to_string(word: u16) -> String {
+
+    if word > 2048 {
+
+        println!("Word {} is too great!", word);
+
+        return String::from(BIP39_ERR);
+    }
+
+    String::from(BIP39_STRINGS[word as usize])
+}

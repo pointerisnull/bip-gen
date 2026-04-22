@@ -8,10 +8,10 @@ const LOWER_MASK: u32 = 0x7fffffff;
 const TEMPERING_MASK_B: u32 =	0x9d2c5680;
 const TEMPERING_MASK_C: u32 = 0xefc60000;
 
-struct TwisterRNG {
+pub struct TwisterRNG {
     index: usize,
     mt: [u32; STATE_VECTOR_LEN],
-    seed: u32,
+    //seed: u32,
 }
 
 impl TwisterRNG {
@@ -20,8 +20,8 @@ impl TwisterRNG {
 
         let mut rand: TwisterRNG = TwisterRNG {
             index: 0,
-            mt: [0; STATE_VECTOR_LEN],
-            seed: seed
+            mt: [0; STATE_VECTOR_LEN]
+            //seed: seed
         };
 
         __seed_rand(&mut rand, seed);
@@ -95,22 +95,4 @@ fn __seed_rand(rand: &mut TwisterRNG, seed: u32) {
         rand.index += 1;
     }
 
-    println!("Rand.index -> {0}", rand.index);
-
-}
-
-pub fn twist(seed: u32) {
-
-    let mut twist: TwisterRNG = TwisterRNG::from_seed(seed);
-
-    let ts = twist.seed;
-
-    println!("\nTwister seed -> {ts}");
-
-    for i in 0..10 {
-
-        let int: u32 = twist.next_int();
-
-        println!("{i} -> {int}");
-    }
 }
